@@ -1,0 +1,20 @@
+user-->signup-->fill business details--->fill customer details or edit any prefilled details--->create invoice 
+
+@user
+--new register
+--login 
+--update info.
+--logout 
+
+
+@business
+--new business registeration
+--delete business registeration (if want to close that business)
+--update business details
+
+@invoice
+-- create it by fill req. info at runtime or edit any prefilled details
+-- delete invoice
+-- change status of invoice(paid/unpaid)
+-- show preview of it 
+-- pdf download option

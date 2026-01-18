@@ -100,7 +100,7 @@ const invoiceSchema = new mongoose.Schema(
     //  Payment info
     status: {
       type: String,
-      enum: ["paid", "unpaid","draft"],
+      enum: ["paid", "unpaid","draft","cancelled"],
       default: "draft",
     },
     paymentDate: Date,

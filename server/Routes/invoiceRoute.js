@@ -169,7 +169,7 @@ router.put("/finalize/:id", async (req, res) => {
 
         // update the invoice...draft to unpaid and give unique invoice no.
         existInvoice.status="unpaid";
-        existInvoice.invoiceNumber="INV-001";
+        existInvoice.invoiceNumber="INV-002";
         await existInvoice.save();
         return res.status(201).json({ message: "invoices finalized successfully..", invoices:existInvoice  });
 
@@ -195,6 +195,31 @@ router.put("/paid/:id", async (req, res) => {
         existInvoice.status="paid";
         await existInvoice.save();
         return res.status(201).json({ message: "invoices status changed successfully..", invoices:existInvoice  });
+
+    }
+    catch (error) {
+        return res.status(500).json({ message: "Internal server error" });
+    }
+})
+
+// to cancel any draft or unpaid invoices
+router.put("/cancel/:id", async (req, res) => {
+    try {
+        const invoiceid = req.params.id;
+        const existInvoice = await invoice.findById(invoiceid);
+        if (!existInvoice) {
+            return res.status(401).json({ message: "no invoice exist" });
+        }
+        if (existInvoice.status === "cancelled") {
+            return res.status(401).json({ message: "invoices is already cancelled.." });
+        }
+        if (existInvoice.status === "paid") {
+            return res.status(401).json({ message: "paid invoices cannot be cancelled.." });
+        }
+        // change status from draft/ unpaid to cancelled
+        existInvoice.status="cancelled";
+        await existInvoice.save();
+        return res.status(201).json({ message: "invoices cancelled successfully..", invoices:existInvoice  });
 
     }
     catch (error) {
