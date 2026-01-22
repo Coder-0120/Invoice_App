@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../Models/userSchema.js");
+const bcrypt = require("bcrypt");
 
 //  Register new user
 router.post("/register",async(req,res)=>{
@@ -10,7 +11,9 @@ router.post("/register",async(req,res)=>{
         if(existUser){
             return res.status(400).json({message:"User already exists"});
         }
-        await User.create({name,email,password});
+         const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        await User.create({name,email,password:hashedPassword});
         return res.status(201).json({message:'User registered successfully'});
 
     }
@@ -23,8 +26,10 @@ router.post("/register",async(req,res)=>{
 router.post("/login",async(req,res)=>{
     const {email,password}=req.body;
     try{
+
         const existUser=await User.findOne({email});
-        if(!existUser||existUser.password!==password){
+        const isMatch = existUser ? await bcrypt.compare(password, existUser.password) : false;
+        if(!existUser||!isMatch){
             return res.status(401).json({message:'Invalid email or password'});
         }
         return res.status(200).json({message:'Login successful',userInfo:{

@@ -67,8 +67,9 @@ const CreateInvoice = () => {
 
     try {
       // Get userId from localStorage - adjust this based on your auth structure
-      const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
-      const userId = userInfo?.userInfo?.userId;
+const storedData = JSON.parse(localStorage.getItem("UserInfo"));
+
+const userId = storedData?.userInfo?.userId || null;
 
       if (!userId) {
         alert('Please login first');
@@ -99,7 +100,7 @@ const CreateInvoice = () => {
       }
     } catch (error) {
       console.error('Error creating invoice:', error);
-      alert('Failed to create invoice. Please check your connection.');
+      alert("business details not filled");
     } finally {
       setLoading(false);
     }
@@ -235,7 +236,6 @@ const CreateInvoice = () => {
                       <input
                         type="number"
                         min="0"
-                        step="0.01"
                         style={errors[`item_${index}_price`] ? styles.inputError : styles.input}
                         value={item.price}
                         onChange={(e) => handleItemChange(index, 'price', Number(e.target.value))}

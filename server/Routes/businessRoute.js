@@ -41,7 +41,7 @@ router.put("/update/:userId",async(req,res)=>{
         const userId=req.params.userId;
         const{businessName,businessOwner,Address,contactNo,tax}=req.body;
 
-        const updatedBusiness=await business.findOneAndUpdate({userId},{businessOwner,Address,contactNo,tax},{new:true});
+        const updatedBusiness=await business.findOneAndUpdate({userId},{businessName,businessOwner,Address,contactNo,tax},{new:true});
         if(!updatedBusiness){
             return res.status(404).json({message:'business not found'});
         }   

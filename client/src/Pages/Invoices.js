@@ -7,14 +7,15 @@ const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
-const userInfo = JSON.parse(localStorage.getItem("UserInfo"));
-  const  userId = userInfo.userInfo.userId;
+const storedData = JSON.parse(localStorage.getItem("UserInfo"));
+
+const userId = storedData?.userInfo?.userId || null;
   // Fetch invoices from backend
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`http://localhost:5000/api/invoice/allmy/${userId}`,{
+        const res = await axios.get(`http://localhost:5000/api/invoice/allmy/${userId}`, {
         });
         setInvoices(res.data.invoices);
       } catch (error) {
@@ -24,7 +25,7 @@ const userInfo = JSON.parse(localStorage.getItem("UserInfo"));
       }
     };
     fetchInvoices();
-  }, [userId]);
+  }, []);
 
   const statusColors = {
     paid: '#10b981',
@@ -41,7 +42,7 @@ const userInfo = JSON.parse(localStorage.getItem("UserInfo"));
   };
 
   // Filter invoices based on selected status
-  const filteredInvoices = invoices.filter(inv => 
+  const filteredInvoices = invoices.filter(inv =>
     filter === 'all' || inv.status === filter
   );
 
@@ -57,29 +58,46 @@ const userInfo = JSON.parse(localStorage.getItem("UserInfo"));
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
   };
-  const handleEdit=(invoiceId)=>{
-    alert("Editing invoice: "+invoiceId);
-   window.location.href=`/invoice/edit/${invoiceId}`;
+  const handleEdit = (invoiceId) => {
+    window.location.href = `/invoice/edit/${invoiceId}`;
   }
-  const finalize=async(invoiceId)=>{
-    try{
+  const finalize = async (invoiceId) => {
+    try {
       await axios.put(`http://localhost:5000/api/invoice/finalize/${invoiceId}`);
       alert("Invoice finalized successfully");
     }
-    catch(error){
+    catch (error) {
       console.log("Error finalizing invoice");
       alert("Error finalizing invoice");
 
     }
   }
+  const markAsPaid = async (invoiceId) => {
+    try {
+      await axios.put(`http://localhost:5000/api/invoice/paid/${invoiceId}`);
+      alert("Invoice marked as paid successfully");
+    }
+    catch (error) {
+      alert("Error marking invoice as paid");
+    }
+  };
+  const cancelInvoice = async (invoiceId) => {
+    try {
+      await axios.put(`http://localhost:5000/api/invoice/cancel/${invoiceId}`);
+      alert("Invoice cancelled successfully");
+    }
+    catch (error) {
+      alert("Error cancelling invoice");
+    }
+  };
 
-  
+
 
   return (
     <div style={styles.pageContainer}>
@@ -204,22 +222,45 @@ const userInfo = JSON.parse(localStorage.getItem("UserInfo"));
                     </td>
                     <td style={styles.td}>
                       <div style={styles.actionBtns}>
-                        <button style={styles.viewBtn} title="View Invoice">
+                        <button style={styles.viewBtn} title="View Invoice" onClick={() => navigate(`/invoice/view/${invoice._id}`)}>
                           <svg style={styles.actionIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
                         </button>
-                        <button style={styles.editBtn} title="Edit Invoice" disabled={invoice.status !== "draft"} onClick={() => handleEdit(invoice._id)}>
+                        {invoice.status === "draft" && (
+                          <>
+                          <button style={styles.editBtn} title="Edit Invoice" disabled={invoice.status !== "draft"} onClick={() => handleEdit(invoice._id)}>
+                            <svg style={styles.actionIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                           <button style={styles.finalizeBtn} title="Finalize Invoice" disabled={invoice.status !== "draft"} onClick={() => finalize(invoice._id)}>
                           <svg style={styles.actionIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </button>
-                        <button style={styles.finalizeBtn} title="Finalize Invoice" disabled={invoice.status !== "draft"} onClick={() => finalize(invoice._id)}>
-                          <svg style={styles.actionIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
+                          </>
+                        )}
+
+                        {invoice.status === "unpaid" && (
+                          <>
+                            
+                            <button style={styles.cancelbtn} title="Cancel Invoice" onClick={() => cancelInvoice(invoice._id)}>
+                              <svg style={styles.cancelIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 22a10 10 0 100-20 10 10 0 000 20zM15 9l-6 6M9 9l6 6" />
+                              </svg>
+                            </button>
+                            <button title="Mark as Paid" disabled={invoice.status !== "unpaid"} onClick={() => markAsPaid(invoice._id)} >
+                              <svg style={styles.paidIcon} viewBox="0 0 24 24" fill="white" stroke="green" >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M12 22a10 10 0 100-20 10 10 0 000 20z"/>
+                              </svg>
+                            </button>
+                          
+
+                          </>
+
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -259,10 +300,20 @@ const userInfo = JSON.parse(localStorage.getItem("UserInfo"));
                 </div>
 
                 <div style={styles.mobileCardFooter}>
-                  <button style={styles.mobileViewBtn}>View Details</button>
+                  <button style={styles.mobileViewBtn} onClick={() => navigate(`/invoice/view/${invoice._id}`)}>View Details</button>
                   <div style={styles.mobileActions}>
-                    <button style={styles.mobileEditBtn} disabled={invoice.status !== "draft"} onClick={() => handleEdit(invoice._id)}>Edit</button>
-                    <button style={styles.mobileEditBtn} disabled={invoice.status !== "draft"} onClick={() => finalize(invoice._id)}>Finalize</button>
+                    {invoice.status === "draft" && (
+                      <button style={styles.mobileEditBtn} onClick={() => handleEdit(invoice._id)}>Edit</button>
+                    )}
+                    {invoice.status === "unpaid" && (
+                      <button style={styles.mobileEditBtn} onClick={() => cancelInvoice(invoice._id)}>Cancelled</button>
+                    )}
+                    {invoice.status === "draft" && (
+                      <button style={styles.mobileEditBtn} onClick={() => finalize(invoice._id)}>Finalize</button>
+                    )}
+                    {invoice.status === "unpaid" && (
+                      <button style={styles.mobileEditBtn} onClick={() => markAsPaid(invoice._id)}>Mark as Paid</button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -275,6 +326,29 @@ const userInfo = JSON.parse(localStorage.getItem("UserInfo"));
 };
 
 const styles = {
+  paidBtn: {
+    background: "#dcfce7",
+    color: "#166534",
+    border: "1px solid #86efac",
+    padding: "8px",
+    borderRadius: "8px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "all 0.2s ease",
+  },
+
+  paidIcon: {
+    width: "20px",
+    height: "20px",
+  },
+
+  // Optional hover effect
+  paidBtnHover: {
+    background: "#bbf7d0",
+    transform: "scale(1.05)",
+  }
+  ,
   pageContainer: {
     maxWidth: '1400px',
     margin: '0 auto',
@@ -318,6 +392,10 @@ const styles = {
   createIcon: {
     width: '18px',
     height: '18px',
+  },
+  cancelIcon: {
+    width: '16px',
+    height: '16px',
   },
   filterBar: {
     display: 'flex',
@@ -504,6 +582,11 @@ const styles = {
     borderRadius: '6px',
     cursor: 'pointer',
     transition: 'all 0.2s',
+  },
+  cancelbtn: {
+    padding: '8px',
+    background: '#fef2f2',
+    color: '#ef4444',
   },
   actionIcon: {
     width: '16px',

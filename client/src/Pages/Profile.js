@@ -1,4 +1,4 @@
-import React, { useState ,useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const Profile = () => {
@@ -9,77 +9,52 @@ const Profile = () => {
     newPassword: '',
     confirmPassword: ''
   });
-  const userInfo = JSON.parse(localStorage.getItem("UserInfo"));
-   useEffect(() => {
-    const fetchProfile=async()=>{
-        try{
-            const res=await axios.get(`http://localhost:5000/api/user/profile/${userInfo.userInfo.userId}`);
-            setProfileData({...profileData,name:res.data.user.name,email:res.data.user.email});
+  const storedData = JSON.parse(localStorage.getItem("UserInfo"));
+  const userId = storedData?.userInfo?.userId || null;
 
-        }
-        catch(error){
-            console.log(error);
-        }
+  useEffect(() => {
+    console.log("Fetching profile for userId:", userId);
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/user/profile/${userId}`);
+        setProfileData({ ...profileData, name: res.data.user.name, email: res.data.user.email });
+
+      }
+      catch (error) {
+        console.log(error);
+      }
     }
     fetchProfile();
 
-   
-  }, []); 
-  
-  
 
-
-  // TODO: Fetch user profile from backend
-  // useEffect(() => {
-  //   const fetchProfile = async () => {
-  //     const res = await axios.get("http://localhost:5000/api/user/profile");
-  //     setProfileData({...profileData, name: res.data.name, email: res.data.email});
-  //   };
-  //   fetchProfile();
-  // }, []);
+  }, [userId]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
-    try{
-        const res=await axios.put(`http://localhost:5000/api/user/update/${userInfo.userInfo.userId}`,{
-            name:profileData.name
-        });
-        alert("Profile updated successfully");
-        localStorage.setItem("UserInfo",JSON.stringify({
-            userId:userInfo.userInfo.userId,
-            name:profileData.name,
-            email:profileData.email
-        }));
+    try {
+      await axios.put(`http://localhost:5000/api/user/update/${userId}`, {
+        name: profileData.name
+      });
+      alert("Profile updated successfully");
+      const existingData = JSON.parse(localStorage.getItem("UserInfo"));
+
+      localStorage.setItem(
+        "UserInfo",
+        JSON.stringify({
+          ...existingData,
+          userInfo: {
+            ...existingData.userInfo,
+            name: profileData.name,
+          },
+        })
+      );
 
     }
-    catch(error){
-        console.log(error);
-        alert("Error in updating profile");
+    catch (error) {
+      console.log(error);
+      alert("Error in updating profile");
     }
   };
-
-//   const handleChangePassword = async (e) => {
-//     e.preventDefault();
-//     if (profileData.newPassword !== profileData.confirmPassword) {
-//       alert('Passwords do not match!');
-//       return;
-//     }
-//     // TODO: Add backend API call to change password
-//     // try {
-//     //   const res = await axios.put("http://localhost:5000/api/user/change-password", {
-//     //     currentPassword: profileData.currentPassword,
-//     //     newPassword: profileData.newPassword
-//     //   });
-//     //   alert('Password changed successfully!');
-//     //   setProfileData({...profileData, currentPassword: '', newPassword: '', confirmPassword: ''});
-//     // } catch (error) {
-//     //   console.error(error);
-//     //   alert('Failed to change password');
-//     // }
-    
-//     alert('Password changed successfully!');
-//     setProfileData({...profileData, currentPassword: '', newPassword: '', confirmPassword: ''});
-//   };
 
   return (
     <div style={styles.pageContainer}>
@@ -98,7 +73,7 @@ const Profile = () => {
                 required
                 style={styles.input}
                 value={profileData.name}
-                onChange={(e) => setProfileData({...profileData, name: e.target.value})}
+                onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
                 placeholder="John Doe"
               />
             </div>
@@ -109,7 +84,7 @@ const Profile = () => {
                 required
                 style={styles.input}
                 value={profileData.email}
-                onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+                onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
                 placeholder="john@example.com"
               />
             </div>
@@ -120,50 +95,7 @@ const Profile = () => {
         </div>
       </form>
 
-      {/* Change Password */}
-      {/* <form onSubmit={handleChangePassword} style={{...styles.form, marginTop: '32px'}}>
-        <div style={styles.formSection}>
-          <h3 style={styles.formSectionTitle}>Change Password</h3>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Current Password *</label>
-            <input
-              type="password"
-              required
-              style={styles.input}
-              value={profileData.currentPassword}
-              onChange={(e) => setProfileData({...profileData, currentPassword: e.target.value})}
-              placeholder="Enter current password"
-            />
-          </div>
-          <div style={styles.formGrid}>
-            <div style={styles.formGroup}>
-              <label style={styles.label}>New Password *</label>
-              <input
-                type="password"
-                required
-                style={styles.input}
-                value={profileData.newPassword}
-                onChange={(e) => setProfileData({...profileData, newPassword: e.target.value})}
-                placeholder="Enter new password"
-              />
-            </div>
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Confirm Password *</label>
-              <input
-                type="password"
-                required
-                style={styles.input}
-                value={profileData.confirmPassword}
-                onChange={(e) => setProfileData({...profileData, confirmPassword: e.target.value})}
-                placeholder="Confirm new password"
-              />
-            </div>
-          </div>
-          <button type="submit" style={styles.submitBtn}>
-            Change Password
-          </button>
-        </div>
-      </form> */}
+     
     </div>
   );
 };
