@@ -79,12 +79,13 @@ const Profile = () => {
               />
             </div>
             <div style={styles.formGroup}>
-              <label style={styles.label}>Email *</label>
+              <label style={styles.label} >Email *</label>
               <input
                 type="email"
                 required
                 style={styles.input}
                 value={profileData.email}
+                disabled
                 onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
                 placeholder="john@example.com"
               />

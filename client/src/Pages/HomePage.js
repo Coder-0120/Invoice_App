@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FileText, Zap, TrendingUp, Shield, Smartphone, Users, CheckCircle, ArrowRight, Play } from 'lucide-react';
+import toast from "react-hot-toast";
 
 const HomePage = () => {
   const [scrollY, setScrollY] = useState(0);
@@ -90,7 +91,7 @@ const HomePage = () => {
   ];
   const handleLogout = () => {
     localStorage.removeItem("UserInfo");
-    alert("Logged out successfully!");
+    toast.success("Logged out successfully!");
     window.location.href = '/home';
   };
 
